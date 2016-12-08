@@ -1,0 +1,135 @@
+---
+author: Yun Zhou 
+---
+
+# Part II. Classification in R
+
+# Import the data into R
+```{r}
+cancer = read.csv("breast_cancer.csv")
+
+# Convert "Class" variable into a factor so that R treats it as a categorical variable, instead of a numeric variable
+
+cancer$Class= factor(cancer$Class)
+
+set.seed(1234)
+```
+
+
+# 1. Split the dataset into 80% training and 20% testing
+
+```{r}
+# Randomly permutate rows of the entire dataset before splitting
+
+cancer_rand = cancer[sample(nrow(cancer)),]
+
+# Split by row indices 
+
+# Find out how many rows in the dataset 
+nrow(cancer)
+
+# There are a total of 683 rows in the dataset 
+# 80% training = 683*80% = 546.4 =546
+
+cancer_train = cancer_rand[1:546,]
+cancer_test = cancer_rand[547:683,]
+```
+
+
+# 2. Build a decision tree model
+
+```{r}
+library(rpart)
+tree = rpart(Class ~ ., data = cancer_train)
+```
+
+
+# 3. Plot the decision tree
+
+```{r}
+pred_tree = predict(tree, cancer_test, type = "class")
+
+library(rpart.plot)
+prp(tree, varlen=0)
+```
+
+# 3.1. How many decision nodes are there in your tree?
+
+In the plot, there are a total of *four* decision nodes in this decision tree. 
+
+# 3.2. Pick one decision rule from your tree and interpret it
+
+The right-most decision rule indicates that if the observation has uniformity of cell size greater than 2.5 but less than 3.5, then the Class of breast cancer belongs to 4. 
+
+# 4. Evaluate the performance of your tree. Specifically, report the following metrics: (1) confusion matrix; (2) accuracy; (3) precision, recall, f-measure for "malignant" class
+
+** Confusion Matrix **
+
+```{r}
+# Find the column number of "Class"
+ncol(cancer)
+
+library(caret)
+confusionMatrix(pred_tree, cancer_test[,10])
+```
+
+
+** Accuracy **
+
+From the confusion matrix output, we know that the accuracy of our decision tree model is *0.9635*. 
+
+** Precision **
+
+```{r}
+
+
+```
+
+** Recall **
+
+```{r}
+
+```
+
+** f-measure for class 'malignant' **
+
+```{r}
+
+
+```
+
+# 5. Now, let's consider using K-NN to do the classification. Is there any need to normalize the data? Why or why not?
+
+```{r}
+summary(cancer)
+```
+
+The summary shows that the values of all the varaibles are of the same scales (0-10), so there is no need in converting them into 0-1 units. 
+
+
+# 6. Build a K-NN classifier
+
+```{r}
+library(class)
+
+# Train a K-NN model
+# Choose your own k
+pred_knn = knn(train = cancer_train[,1:9],
+               test = cancer_test[,1:9],
+               cl = cancer_train[,10], k=3)
+```
+
+
+# 7. Evaluate the performance of your K-NN model
+
+```{r}
+confusionMatrix(pred_knn, cancer_test[,10])
+```
+
+
+# Does your K-NN model perform better than decision tree, in terms of accuracy?
+
+** Accuracy **
+
+From the confusion matrix output, we know that the accuracy of our decision tree model is *0.9854* when *k=3*.
+
