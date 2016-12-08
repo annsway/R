@@ -1,0 +1,60 @@
+---
+title: "IDSC4444_HW2"
+author: "Yun Zhou"
+date: "September 17, 2016"
+---
+
+# Part II. Question 4. Mine Association Rules from Data
+
+# 1. Import it into R as transaction data
+
+```{r}
+library(arules)
+grocery = read.transactions("groceries.csv",
+                            format="basket",
+                            sep=",", rm.duplicates = TRUE)
+```
+
+# 2. How many unique items are there in this data?
+
+```{r, results='hide'}
+itemInfo(grocery)
+```
+
+There are a total of *169* unique items in this data set. 
+
+# 3. Find all association rules with minsupp = 0.05 and minconf = 0.05
+
+```{r}
+grocery_rules = apriori(grocery, parameter=list(supp=0.05, conf=0.05))
+```
+
+# 4. Inspect the rules
+# How many rules are found?
+
+```{r, results='hide'}
+inspect(grocery_rules)
+```
+
+There are a total of *34* rules found. 
+
+# 5. Among the rules you just find, get the subset of rules whose LHS contain "whole milk"
+
+```{r}
+inspect(sort(subset(grocery_rules, lhs %pin% "whole milk"), by="lift"))
+```
+
+
+# 6. Among the rules you get from the last question, which one has the highest lift?
+# Interpret this rule with highest lift.
+# Interpret the lift ratio.
+# As a store manager, what action could you take after you know this rule (3 - 4 sentences)?
+
+Among the rules I get from the last quesiton, {whole milk -> yogurt} has the highest lift, which is about *1.572*. 
+
+To interpret, customers who buy whole milk are 1.572 times more likely to purchase yogurt than customers in general. 
+
+As a store manager, I could first of all put whole milk and yogurt far away from each other so that customers who tend to buy these 2 item-sets can work through the entire store. Next, I would bundle whole milk and yogurt into a "Dairy Kit" to sell. Last but not least, I might lower the price of whole milk while raise the price of yorgurt, because customers might purchase more of these two products if they see there is discount on any of them. 
+
+
+
