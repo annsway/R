@@ -1,0 +1,129 @@
+---
+title: "IDSC4444_HW3"
+author: "Yun Zhou"
+date: "September 24, 2016"
+---
+
+# Part I. Distance Metrics 
+
+```{r}
+Exam1 = c(91, 45, 27, 75) 
+Exam2 = c(35, 40, 85, 93) 
+Exam3 = c(67, 80, 62, 55)
+StudentID = c("K", "L", "M", "N")
+
+Exam = data.frame(StudentID, Exam1, Exam2, Exam3)
+Exam
+
+library(stats)
+distance_euclidean = dist(Exam[1:4,2:4], method="euclidean")
+distance_euclidean
+
+distance_manhattan = dist(Exam[1:4,2:4], method="manhattan")
+distance_manhattan
+
+distance_maximum = dist(Exam[1:4,2:4], method="maximum")
+distance_maximum
+```
+
+
+# Part II. Clustering Analysis in R
+```{r}
+library(stats)
+
+utility = read.csv("utility.csv")
+head(utility)
+```
+
+# 1. The goal is to cluster the 22 utilities in this dataset. Given this goal, should we include all the variables in clustering analysis, or are some of them unnecessary? Why?
+
+I think it is not necessary to use all the variables in clustering analysis. For example, utility name and utility ID are not needed for clustering calculation. 
+
+# Answer the above question. And if you think some variables are unnecessary, write code below to select only the necessary columns. If you think all variables are necessary for clustering, you don't need to write any code
+
+```{r}
+utility_selected = subset(utility[,3:10])
+```
+
+
+# 2. Is there any need to normalize the data? Why or why not?
+# If you think normalization is needed, write your code below to do normalization on the selected columns. Feel free to re-use the code from in-class exercise. 
+
+I think normalization is needed, because the scales or units used for the characteristics of utilities seem to be different. 
+
+```{r}
+# Define a normalization function 
+Normalize <- function(x){
+  return ((x-min(x))/(max(x)-min(x)))
+}
+
+utility_normalized = Normalize(utility_selected)
+```
+
+# 3. Get distance matrix. Use Manhattan distance
+
+```{r}
+distance_matrix = dist(utility_normalized[,], method="manhattan")
+distance_matrix
+```
+
+
+# 4. Apply Hierarchical Clustering
+# Use Ward method to measure distance between clusters
+
+```{r}
+hierarchical = hclust(distance_matrix, method="ward.D")
+```
+
+# 5. Plot the dendrogram. No need to specify the "labels" parameter
+# How many clusters do you think is appropriate?
+
+```{r}
+plot(hierarchical, labels=utility$utility_name)
+```
+
+There are a total of three clusters. 
+
+# 6. Based on your answer to the last question, mark the cluster solutions on dendrogram. That is, if you think there are X clusters, then mark the X-cluster solution
+
+```{r}
+plot(hierarchical, labels=utility$utility_name)
+rect.hclust(hierarchical, k=3)
+cutree(hierarchical, k=3)
+```
+
+# 7. Now, apply K-Means clustering
+# Use the cluster number that you used in the last two questions
+
+```{r}
+kcluster = kmeans(utility_normalized, centers=3)
+```
+
+
+# 8. Report cluster centroids, and interpret each cluster in your own words. Note that you do not have to differentiate the clusters on every single variable. Rather, try to describe each cluster by its most distinguishable characteristics.
+
+```{r}
+kcluster$centers
+kcluster$cluster
+```
+
+
+
+The cluster centroid is the mean of all data points within that cluster. 
+
+# 9. What is the most natural number of clusters in this data?
+# To answer this question, plot the SSE curve as we did at the in class exercise, then explain how you find the most natural number of clusters.
+
+```{r}
+SSE_curve = c()
+for (n in 1:10) {
+  kcluster = kmeans(utility_normalized, centers=n)
+  sse = sum(kcluster$withinss)
+  SSE_curve[n] = sse
+}
+
+SSE_curve
+plot(1:10, SSE_curve, type="b")
+```
+
+I think the most natural number of clusters is three as the elbow of SSE curve is associated with the cluster number of 3. 
