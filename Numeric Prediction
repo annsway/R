@@ -1,0 +1,72 @@
+---
+author: "Yun Zhou"
+date: "10/9/2016"
+---
+
+# Part II. Numeric Prediction in R
+
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(class)
+```
+
+# Import the data into R
+
+```{r}
+purchase = read.csv("purchase.csv")
+
+set.seed(1234)
+```
+
+# 1. Split the dataset into 70% training and 30% testing
+
+```{r}
+purchase_rand = purchase[sample(nrow(purchase)),]
+purchase_train = purchase_rand[1:700,]
+purchase_test = purchase_rand[701:1000,]
+```
+  
+# 2. Build a regression tree model
+
+```{r}
+tree = rpart(Spending ~., data=purchase_train)
+```
+
+# 3. Plot the tree, and then answer the 
+following questions:
+
+```{r}
+prp(tree, varlen=3)
+```
+
+# 3.1. How many decision nodes are there in your tree?
+
+There are a total of nine decision nodes in this tree model. 
+
+# 3.2. Pick one decision rule from your tree and interpret it
+
+For example, the right-most decision rule in this tree can be interpreted in this way: customers who have frq greater than 4.5 but less than 7.5 have an average spending of 1049. 
+
+# 4. Evaluate the performance of your tree. Specifically, report the following metrics: (1) MAE; (2) MAPE; (3) RMSE
+
+```{r}
+pred_tree = predict(tree, purchase_test)
+actual = purchase_test$Spending
+error = pred_tree - actual
+
+# MAE
+MAE = mean(abs(error))
+MAE
+
+#MAPE: mean absolute percent error
+MAPE = mean(abs(error/actual))
+MAPE
+
+#RMSE
+RMSE = sqrt(mean(error^2))
+RMSE
+```
+
+This model has 99.199 as MAE, 1.185 as MAPE, and 161.96 as RMSE. 
