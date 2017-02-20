@@ -1,0 +1,478 @@
+---
+title: "IDSC4444 Summary"
+author: "Yun Zhou"
+date: "12/6/2016"
+output: pdf_document
+---
+
+*1.Download "hills.csv" data file from Moodle under "Homework 1", import it into R*
+
+```{r, echo=FALSE}
+setwd("~/Dropbox/Work/_Apply/_US/6/Dropbox/R code")
+```
+
+```{r}
+hills = read.csv("hills.csv")
+head(hills)
+```
+
+
+*3. What is the value of "Distance" for "Race" LairigGhru?*
+
+```{r}
+# Get the row number of race LairigGhru by subsetting 
+hills_LairigGhru <- subset(hills, Race=="LairigGhru")
+hills_LairigGhru
+
+# Print out the distance of LairigGhru 
+hills[11,2]
+```
+
+The value of distance for race LairigGhru is *28*. 
+
+
+
+
+*4. Arrange hills data based on "Time" values, from small to large. What is the Race name associated with longest Time?*
+
+```{r}
+# Sort data by time from the samlleset to the largest
+hills_sorted = hills[order(hills$Time),]
+
+# Find the last row of the sorted data set
+nrow(hills_sorted)
+hills_sorted[35,]
+```
+
+It is obvious that *BensofJura* is associated with the longest *Time*, which is *204.617*. 
+
+
+
+
+*5. Find the subset of hills data with "Climb" less than 1000. How many races are there in this subset?*
+
+```{r}
+hills_subset = subset(hills, Climb<1000)
+
+# Count rows 
+nrow(hills_subset)
+```
+
+There are *17* races in this subset. 
+
+
+
+
+*6. Compute the total race "Time" in the above subset. What is the total race time? (Hint: check out a function called sum())*
+
+```{r}
+sum(hills_subset$Time)
+```
+
+The total race time is *553.549*. 
+
+
+
+
+# Part III. Data Visualization in R
+
+*1. Create	a	histogram	of the "Time" variable*
+
+```{r}
+hist(hills$Time)
+```
+
+*2. Create a scatterplot of "Distance" and "Time" variables*
+```{r}
+plot(hills$Distance, hills$Time)
+```
+
+*3. Create a scatterplot matrix of "Distance", "Climb", and "Time" variables*
+
+```{r}
+require(lattice)
+require(ggplot2)
+
+pairs(hills[2:4], pch=25)
+```
+
+*4. Create a box plot of the "Distance" variable*
+
+```{r}
+boxplot(hills$Distance)
+```
+
+*4.1 What does the thick black horizontal line represent?*
+
+The thick black horizontal line represents the *median* of the distance values in this data set, which was around *6* units. 
+
+*4.2 What does the height of the rectangle box represent?*
+
+The height of the rectangle box represents the 3rd quantile 75th percentile of the distance value in this data set.  
+
+*4.3 What do the two horizontal lines above and below the rectangle box represent?*
+
+The horizontal line above the rectangle box represents the maximum of the "normal" range of distance in this data set, while the horizontal line below the box is the minimum of the "normal" range of it. 
+
+
+*5. Create a box plot of the "Distance" variable, grouped based on whether the "Time" for the race is >= 39.75 (or not). I.e., you should end up with two box plots, side by side, in one plot.* 
+
+```{r}
+hills$grouping <- ifelse(hills$Time>=39.75, c(">=39.75"), c("<39.75"))
+
+boxplot(Distance~grouping, data=hills, main="Distance vs. Time", xlab="Time", ylab="Distance")
+```
+
+
+# Part II. Question 4. Mine Association Rules from Data
+
+# 1. Download "groceries.csv" data file from Moodle under "Homework 2".
+# Import it into R as transaction data
+
+```{r}
+library(arules)
+grocery = read.transactions("groceries.csv",
+                            format="basket",
+                            sep=",", rm.duplicates = TRUE)
+```
+
+# 2. How many unique items are there in this data?
+
+```{r, results='hide'}
+itemInfo(grocery)
+```
+
+There are a total of *169* unique items in this data set. 
+
+# 3. Find all association rules with minsupp = 0.05 and minconf = 0.05
+
+```{r}
+grocery_rules = apriori(grocery, parameter=list(supp=0.05, conf=0.05))
+```
+
+# 4. Inspect the rules
+# How many rules are found?
+
+```{r, results='hide'}
+inspect(grocery_rules)
+```
+
+There are a total of *34* rules found. 
+
+# 5. Among the rules you just find, get the subset of rules whose LHS contain "whole milk"
+# For this question, copy and paste the rules into submission
+# Hint: use the code from slides
+
+```{r}
+inspect(sort(subset(grocery_rules, lhs %pin% "whole milk"), by="lift"))
+```
+
+# Part I. Distance Metrics 
+
+```{r}
+Exam1 = c(91, 45, 27, 75) 
+Exam2 = c(35, 40, 85, 93) 
+Exam3 = c(67, 80, 62, 55)
+StudentID = c("K", "L", "M", "N")
+
+Exam = data.frame(StudentID, Exam1, Exam2, Exam3)
+Exam
+
+library(stats)
+distance_euclidean = dist(Exam[1:4,2:4], method="euclidean")
+distance_euclidean
+
+distance_manhattan = dist(Exam[1:4,2:4], method="manhattan")
+distance_manhattan
+
+distance_maximum = dist(Exam[1:4,2:4], method="maximum")
+distance_maximum
+```
+
+
+# Part II. Clustering Analysis in R
+```{r}
+library(stats)
+```
+
+# Download "utility.csv" data file from Moodle under "Homework 3".
+
+```{r}
+utility = read.csv("utility.csv")
+head(utility)
+```
+
+# 1. The goal is to cluster the 22 utilities in this dataset. Given this goal, should we include all the variables in clustering analysis, or are some of them unnecessary? Why?
+
+I think it is not necessary to use all the variables in clustering analysis. For example, utility name and utility ID are not needed for clustering calculation. 
+
+# Answer the above question. And if you think some variables are unnecessary, write code below to select only the necessary columns. If you think all variables are necessary for clustering, you don't need to write any code
+
+```{r}
+utility_selected = subset(utility[,3:10])
+```
+
+
+# 2. Is there any need to normalize the data? Why or why not?
+# If you think normalization is needed, write your code below to do normalization on the selected columns. Feel free to re-use the code from in-class exercise. 
+
+I think normalization is needed, because the scales or units used for the characteristics of utilities seem to be different. 
+
+```{r}
+# Define a normalization function 
+Normalize <- function(x){
+  return ((x-min(x))/(max(x)-min(x)))
+}
+
+utility_normalized = Normalize(utility_selected)
+```
+
+# 3. Get distance matrix. Use Manhattan distance
+
+```{r}
+distance_matrix = dist(utility_normalized[,], method="manhattan")
+head(distance_matrix)
+```
+
+
+# 4. Apply Hierarchical Clustering
+# Use Ward method to measure distance between clusters
+
+```{r}
+hierarchical = hclust(distance_matrix, method="ward.D")
+```
+
+# 5. Plot the dendrogram. No need to specify the "labels" parameter
+# How many clusters do you think is appropriate?
+
+```{r}
+plot(hierarchical, labels=utility$utility_name)
+```
+
+There are a total of three clusters. 
+
+# 6. Based on your answer to the last question, mark the cluster solutions on dendrogram. That is, if you think there are X clusters, then mark the X-cluster solution
+
+```{r}
+plot(hierarchical, labels=utility$utility_name)
+rect.hclust(hierarchical, k=3)
+cutree(hierarchical, k=3)
+```
+
+# 7. Now, apply K-Means clustering
+# Use the cluster number that you used in the last two questions
+
+```{r}
+kcluster = kmeans(utility_normalized, centers=3)
+```
+
+
+# 8. Report cluster centroids, and interpret each cluster in your own words. Note that you do not have to differentiate the clusters on every single variable. Rather, try to describe each cluster by its most distinguishable characteristics.
+
+```{r}
+kcluster$centers
+kcluster$cluster
+```
+
+
+
+The cluster centroid is the mean of all data points within that cluster. 
+
+# 9. What is the most natural number of clusters in this data?
+# To answer this question, plot the SSE curve as we did at the in class exercise, then explain how you find the most natural number  of clusters.
+
+```{r}
+SSE_curve = c()
+for (n in 1:10) {
+  kcluster = kmeans(utility_normalized, centers=n)
+  sse = sum(kcluster$withinss)
+  SSE_curve[n] = sse
+}
+
+SSE_curve
+plot(1:10, SSE_curve, type="b")
+```
+
+I think the most natural number of clusters is three as the elbow of SSE curve is associated with the cluster number of 3. 
+
+
+# Part II. Classification in R
+
+# Import the data into R
+```{r}
+cancer = read.csv("breast_cancer.csv")
+
+# Convert "Class" variable into a factor so that R treats it as a categorical variable, instead of a numeric variable
+
+cancer$Class= factor(cancer$Class)
+
+set.seed(1234)
+```
+
+# Cross-validation
+# 1. Split the dataset into 80% training and 20% testing
+
+```{r}
+# Randomly permutate rows of the entire dataset before splitting
+
+cancer_rand = cancer[sample(nrow(cancer)),]
+
+# Split by row indices 
+
+# Find out how many rows in the dataset 
+nrow(cancer)
+
+# There are a total of 683 rows in the dataset 
+# 80% training = 683*80% = 546.4 =546
+
+cancer_train = cancer_rand[1:546,]
+cancer_test = cancer_rand[547:683,]
+```
+
+
+# 2. Build a decision tree model
+
+```{r}
+library(rpart)
+tree = rpart(Class ~ ., data = cancer_train)
+```
+
+
+# 3. Plot the decision tree
+
+```{r}
+pred_tree = predict(tree, cancer_test, type = "class")
+
+library(rpart.plot)
+prp(tree, varlen=0)
+```
+
+# 3.1. How many decision nodes are there in your tree?
+
+In the plot, there are a total of *four* decision nodes in this decision tree. 
+
+# 3.2. Pick one decision rule from your tree and interpret it
+
+The right-most decision rule indicates that if the observation has uniformity of cell size greater than 2.5 but less than 3.5, then the Class of breast cancer belongs to 4. 
+
+# 4. Evaluate the performance of your tree. Specifically, report the following metrics: (1) confusion matrix; (2) accuracy; (3) precision, recall, f-measure for "malignant" class
+
+** Confusion Matrix **
+
+```{r}
+# Find the column number of "Class"
+ncol(cancer)
+
+library(caret)
+confusionMatrix(pred_tree, cancer_test[,10])
+```
+
+** Accuracy **
+
+From the confusion matrix output, we know that the accuracy of our decision tree model is *0.9635*. 
+
+# 5. Now, let's consider using K-NN to do the classification. Is there any need to normalize the data? Why or why not?
+
+```{r}
+summary(cancer)
+```
+
+The summary shows that the values of all the varaibles are of the same scales (0-10), so there is no need in converting them into 0-1 units. 
+
+
+# 6. Build a K-NN classifier
+
+```{r}
+library(class)
+
+# Train a K-NN model
+# Choose your own k
+pred_knn = knn(train = cancer_train[,1:9],
+               test = cancer_test[,1:9],
+               cl = cancer_train[,10], k=3)
+```
+
+
+# 7. Evaluate the performance of your K-NN model
+
+```{r}
+confusionMatrix(pred_knn, cancer_test[,10])
+```
+
+
+# Does your K-NN model perform better than decision tree, in terms of accuracy?
+
+** Accuracy **
+
+From the confusion matrix output, we know that the accuracy of our decision tree model is *0.9854* when *k=3*.
+
+
+
+# Part II. Numeric Prediction in R
+
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(class)
+```
+
+# Import the data into R
+
+```{r}
+purchase = read.csv("purchase.csv")
+
+set.seed(1234)
+```
+
+# 1. Split the dataset into 70% training and 30% testing
+
+```{r}
+purchase_rand = purchase[sample(nrow(purchase)),]
+purchase_train = purchase_rand[1:700,]
+purchase_test = purchase_rand[701:1000,]
+```
+  
+# 2. Build a regression tree model
+
+```{r}
+tree = rpart(Spending ~., data=purchase_train)
+```
+
+# 3. Plot the tree, and then answer the 
+following questions:
+
+```{r}
+prp(tree, varlen=3)
+```
+
+# 3.1. How many decision nodes are there in your tree?
+
+There are a total of *9* decision nodes in this tree model. 
+
+# 3.2. Pick one decision rule from your tree and interpret it
+
+For example, the right-most decision rule in this tree can be interpreted in this way: customers who have frq greater than 4.5 but less than 7.5 have an average spending of 1049. 
+
+# 4. Evaluate the performance of your tree. Specifically, report the following metrics: (1) MAE; (2) MAPE; (3) RMSE
+
+```{r}
+pred_tree = predict(tree, purchase_test)
+actual = purchase_test$Spending
+error = pred_tree - actual
+
+# MAE
+MAE = mean(abs(error))
+MAE
+
+#MAPE: mean absolute percent error
+MAPE = mean(abs(error/actual))
+MAPE
+
+#RMSE
+RMSE = sqrt(mean(error^2))
+RMSE
+```
+
+This model has 99.199 as MAE, 1.185 as MAPE, and 161.96 as RMSE. 
+
