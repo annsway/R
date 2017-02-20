@@ -7,6 +7,7 @@ output: pdf_document
 
 *1.Download "hills.csv" data file from Moodle under "Homework 1", import it into R*
 
+
 ```{r, echo=FALSE}
 setwd("~/Dropbox/Work/_Apply/_US/6/Dropbox/R code")
 ```
